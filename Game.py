@@ -1,97 +1,90 @@
 import math
 import pygame as game
-import random as rand
-import numpy as np
+
 game.init()
 
-#System Variables
+# System Variables
 mapSizeX = 900
 mapSizeY = 600
 WINDOW = game.display.set_mode((mapSizeX, mapSizeY))
 path = "C:\\Users\\Morgan\\OneDrive - Robert Gordon University\\Documents\\University\\Computing Math\\TankGame\\images\\tank.png"
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
 FULLBLUE = (100, 100, 255)
 game.display.set_caption("Tank Game")
-#Tank Shell Initalised Variables
-shellW = 5
-shellH = 10
-shellVelocity = 7
-isFired = "READY!"
-tankShellX = 0
-tankShellY = 0
-tankShellSize = 10
-Shells = []
 
-#Tank Initalised Variables
+# Tank Initialized Variables
 tankSizeX = 200
 tankSizeY = 100
 tankX = mapSizeX // 2 - tankSizeX // 2
 tankY = mapSizeY - tankSizeY
 tankVelocity = 10
-lineX = tankX + tankSizeX - shellW -25
-lineY = tankY + 52
 
-# def maxLine():
+# Tank Shell Initialized Variables
+shellVelocity = 7
+shellVelocityX = 0
+shellVelocityY = 0
+shellArc = math.pi / 4
+gravity = 0.02
+tankShellX = 0
+tankShellY = 0
+tankShellSize = 10
+shellTime = 0
+maxShellTime =1000
+# Load tank image
+tank = game.image.load(path).convert_alpha()
+tank = game.transform.scale(tank, (tankSizeX, tankSizeY))
 
-#Sets the tank image to a maluable player object
-def initalise_tank():
-    global tank
-    tank = game.image.load(path).convert_alpha()
-    tank = game.transform.scale(tank, (tankSizeX, tankSizeY))
-    WINDOW.blit(tank, (tankX, tankY))
-    return tank
-#Initalises the tank shell
-def tankShell(X, Y):
-    game.draw.circle(WINDOW, FULLBLUE, (X, Y), tankShellSize, 3)
+# Set up tank barrel coordinates
+barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
+barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
+
 
 running = True
 while running:
+    WINDOW.fill(WHITE)
     for event in game.event.get():
         if event.type == game.QUIT:
             running = False
 
-#Key Events
-    if event.type == game.KEYDOWN:
-        if event.key == game.K_RIGHT:     
-          tankX += tankVelocity 
-          right = True
+    # Key Events
+    keys = game.key.get_pressed()
+    if keys[game.K_RIGHT]:
+        tankX += tankVelocity
+    if keys[game.K_LEFT]:
+        tankX -= tankVelocity
+    if keys[game.K_UP]:
+        shellArc += 0.1
+    if keys[game.K_DOWN]:
+        shellArc -= 0.1
 
-    if event.type == game.KEYDOWN:      
-        if event.key == game.K_LEFT:     
-           tankX -= tankVelocity
-           left = True
-#Key Fire Event
-    if event.type == game.KEYDOWN:
-            if event.key == game.K_BACKSPACE:
-                if isFired == "READY!":
-                    print("Tank is loaded")
-                    isFired = "FIRE!"
-                    print("Tank Fired")
-                    #Sets the shell x,y to approprite position of tank barrel
-                    tankShellX = cursor[0]
-                    tankShellY = cursor[1]
-    #Fires shell in constant x Velocity
-    if isFired == "FIRE!":
-        tankShellX += shellVelocity 
-        #Checks if out of bounds to reset the Shell State and Pos
-        if tankShellX >= mapSizeX:
-            isFired = "READY!"  
-    cursor = game.mouse.get_pos()
+     # Calculate barrel endpoint position
+    barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
+    barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
 
-#Trying to to add a maximum for the line length for arrow aiming    
-    # if cursor[0] >= 600 or cursor[0] <= 460 :
-    #     cursorX = game.mouse.set_cursor([520,cursor[1]])
-    #     cursorY = game.mouse.set_cursor([cursor[0],520])
-        
-    # print(lineX)
+    # Draw tank and barrel
     WINDOW.fill(WHITE)
-    #Calls the Initalised tank
-    initalise_tank()
-    #Calles the initalised tankShell
-    if isFired == "FIRE!":
-        tankShell(tankShellX, tankShellY)
-    game.draw.line(WINDOW, FULLBLUE,(lineX, lineY),cursor,5)
+    WINDOW.blit(tank, (tankX, tankY))
+    game.draw.line(WINDOW, FULLBLUE, (tankX + tankSizeX / 2, tankY + tankSizeY / 2), (barrelX, barrelY), 5)
+
+    # Key Fire Event
+    if keys[game.K_SPACE]:
+        tankShellX, tankShellY = tankX + tankSizeX /2, tankY + tankSizeY / 2
+        shellVelocityX = shellVelocity * math.cos(shellArc) * 2.5
+        shellVelocityY = -shellVelocity * math.sin(shellArc)
+        shellTime = 0
+
+    if shellTime < maxShellTime:
+        shellTime += 1
+        tankShellX += shellVelocityX
+        tankShellY += shellVelocityY + 0.5 * gravity * shellTime ** 2
+
+        # Draw tank shell
+        game.draw.circle(WINDOW, FULLBLUE, (int(tankShellX), int(tankShellY)), tankShellSize)
+    else:
+        # Reset tank shell position
+        tankShellX = 0
+        tankShellY = 0
+
     game.display.update()
     game.time.Clock().tick(60)
 
