@@ -1,5 +1,6 @@
 import math
 import pygame as game
+import random
 
 game.init()
 
@@ -49,6 +50,15 @@ font = game.font.SysFont('Arial', 24)
 barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
 barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
 
+def move_target():
+    global targetX, targetY
+
+    # Restrict target's maximum height to ensure the shell can reach it
+    max_target_height = mapSizeY - 200  
+
+    targetX = random.randint(0, mapSizeX - targetRadius) 
+    targetY = random.randint(max_target_height, mapSizeY - targetRadius)
+
 
 running = True
 while running:
@@ -59,9 +69,9 @@ while running:
 
     # Key Events
     keys = game.key.get_pressed()
-    if keys[game.K_RIGHT]:
+    if keys[game.K_RIGHT] and tankX + tankVelocity + tankSizeX <= mapSizeX:  # Check right boundary
         tankX += tankVelocity
-    if keys[game.K_LEFT]:
+    if keys[game.K_LEFT] and tankX - tankVelocity >= 0:  # Check left boundary
         tankX -= tankVelocity
     if keys[game.K_UP] and shellArc < 1.5:
         shellArc += 0.1
@@ -70,7 +80,7 @@ while running:
 
      # Calculate barrel endpoint position
     barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
-    barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
+    barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30 
 
     # Draw tank and barrel
     WINDOW.fill(WHITE)
@@ -104,15 +114,15 @@ while running:
         # Move shell very far off screen, I couldn't figure out how to delete it
         tankShellX = 9999
         tankShellY = 9999
-
         shellTime = 0
+        move_target()
 
     # Render Target 
     game.draw.circle(WINDOW, RED, (targetX, targetY), targetRadius)
 
     # Render Score
     score_text = font.render("Score: " + str(score), True, FULLBLUE)
-    WINDOW.blit(score_text, (10, 10))  # Draw score in top-left
+    WINDOW.blit(score_text, (10, 10))
 
     game.display.update()
     game.time.Clock().tick(60)
