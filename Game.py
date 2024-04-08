@@ -7,9 +7,10 @@ game.init()
 mapSizeX = 900
 mapSizeY = 600
 WINDOW = game.display.set_mode((mapSizeX, mapSizeY))
-path = "C:\\Users\\Morgan\\OneDrive - Robert Gordon University\\Documents\\University\\Computing Math\\TankGame\\images\\tank.png"
+path = "images\\tank.png"
 WHITE = (255, 255, 255)
 FULLBLUE = (100, 100, 255)
+RED = (255, 0, 0)
 game.display.set_caption("Tank Game")
 
 # Tank Initialized Variables
@@ -29,10 +30,20 @@ tankShellX = 0
 tankShellY = 0
 tankShellSize = 10
 shellTime = 0
-maxShellTime =1000
+maxShellTime = 1000
+
 # Load tank image
 tank = game.image.load(path).convert_alpha()
 tank = game.transform.scale(tank, (tankSizeX, tankSizeY))
+
+# Target Variables
+targetX = mapSizeX - 200
+targetY = mapSizeY - 100
+targetRadius = 30
+
+# Score Variables
+score = 0
+font = game.font.SysFont('Arial', 24)
 
 # Set up tank barrel coordinates
 barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
@@ -84,6 +95,23 @@ while running:
         # Reset tank shell position
         tankShellX = 0
         tankShellY = 0
+
+    # Collision Detection
+    distance_to_target = math.sqrt((tankShellX - targetX) ** 2 + (tankShellY - targetY) ** 2)
+    if distance_to_target <= tankShellSize + targetRadius:
+        # Target Hit!
+        score += 1
+        # Move shell very far off screen, I couldn't figure out how to delete it
+        tankShellX = 9999
+        tankShellY = 9999
+        shellTime = 0
+
+    # Render Target 
+    game.draw.circle(WINDOW, RED, (targetX, targetY), targetRadius)
+
+    # Render Score
+    score_text = font.render("Score: " + str(score), True, FULLBLUE)
+    WINDOW.blit(score_text, (10, 10))  # Draw score in top-left
 
     game.display.update()
     game.time.Clock().tick(60)
