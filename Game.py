@@ -63,9 +63,9 @@ while running:
         tankX += tankVelocity
     if keys[game.K_LEFT]:
         tankX -= tankVelocity
-    if keys[game.K_UP]:
+    if keys[game.K_UP] and shellArc < 1.5:
         shellArc += 0.1
-    if keys[game.K_DOWN]:
+    if keys[game.K_DOWN] and shellArc > 0:
         shellArc -= 0.1
 
      # Calculate barrel endpoint position
@@ -104,6 +104,7 @@ while running:
         # Move shell very far off screen, I couldn't figure out how to delete it
         tankShellX = 9999
         tankShellY = 9999
+
         shellTime = 0
 
     # Render Target 
