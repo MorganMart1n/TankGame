@@ -42,9 +42,12 @@ targetX = mapSizeX - 200
 targetY = mapSizeY - 100
 targetRadius = 30
 
-# Score Variables
+# Score and Level Variables
 score = 0
+level = 1
+scorePerLevel = 5
 font = game.font.SysFont('Arial', 24)
+
 
 # Set up tank barrel coordinates
 barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
@@ -53,10 +56,10 @@ barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
 def move_target():
     global targetX, targetY
 
-    # Restrict target's maximum height to ensure the shell can reach it
-    max_target_height = mapSizeY - 200  
+    # Adjusted where target can spawn to make sure target can always be reached
+    max_target_height = mapSizeY - 175  
 
-    targetX = random.randint(0, mapSizeX - targetRadius) 
+    targetX = random.randint(mapSizeX / 6, mapSizeX - targetRadius) 
     targetY = random.randint(max_target_height, mapSizeY - targetRadius)
 
 
@@ -115,14 +118,31 @@ while running:
         tankShellX = 9999
         tankShellY = 9999
         shellTime = 0
-        move_target()
+        move_target()        
+    # Increase level and decrease target size for every level complete
+        if score % scorePerLevel == 0 and targetRadius >= 10:
+            level += 1
+            targetRadius -= 5 
+
+    # Checks if player has won the game
+    if score >= 25:
+        #Clears window and displays win message
+        WINDOW.fill(WHITE)
+        winning_message = font.render("Congratulations! You have completed the game!", True, RED)
+        winning_rect = winning_message.get_rect(center=(mapSizeX / 2, mapSizeY / 2))
+        WINDOW.blit(winning_message, winning_rect)
+        game.display.update()
+        game.time.delay(5000) # Delays window closing and allows player to read message
+        break
 
     # Render Target 
     game.draw.circle(WINDOW, RED, (targetX, targetY), targetRadius)
 
-    # Render Score
+    # Render Score and Level
     score_text = font.render("Score: " + str(score), True, FULLBLUE)
+    level_text = font.render("Level: " + str(level), True, FULLBLUE)
     WINDOW.blit(score_text, (10, 10))
+    WINDOW.blit(level_text, (10, 40))
 
     game.display.update()
     game.time.Clock().tick(60)
