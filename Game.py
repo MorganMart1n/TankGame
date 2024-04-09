@@ -1,5 +1,6 @@
 import math
 import pygame as game
+import random
 
 game.init()
 
@@ -41,13 +42,25 @@ targetX = mapSizeX - 200
 targetY = mapSizeY - 100
 targetRadius = 30
 
-# Score Variables
+# Score and Level Variables
 score = 0
+level = 1
+scorePerLevel = 5
 font = game.font.SysFont('Arial', 24)
+
 
 # Set up tank barrel coordinates
 barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
 barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
+
+def move_target():
+    global targetX, targetY
+
+    # Adjusted where target can spawn to make sure target can always be reached
+    max_target_height = mapSizeY - 175  
+
+    targetX = random.randint(mapSizeX / 6, mapSizeX - targetRadius) 
+    targetY = random.randint(max_target_height, mapSizeY - targetRadius)
 
 
 running = True
@@ -59,9 +72,9 @@ while running:
 
     # Key Events
     keys = game.key.get_pressed()
-    if keys[game.K_RIGHT]:
+    if keys[game.K_RIGHT] and tankX + tankVelocity + tankSizeX <= mapSizeX:  # Check right boundary
         tankX += tankVelocity
-    if keys[game.K_LEFT]:
+    if keys[game.K_LEFT] and tankX - tankVelocity >= 0:  # Check left boundary
         tankX -= tankVelocity
     if keys[game.K_UP] and shellArc < 1.5:
         shellArc += 0.1
@@ -70,7 +83,7 @@ while running:
 
      # Calculate barrel endpoint position
     barrelX = tankX + tankSizeX / 2 + math.cos(shellArc) * 30
-    barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
+    barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30 
 
     # Draw tank and barrel
     WINDOW.fill(WHITE)
@@ -104,15 +117,32 @@ while running:
         # Move shell very far off screen, I couldn't figure out how to delete it
         tankShellX = 9999
         tankShellY = 9999
-
         shellTime = 0
+        move_target()        
+    # Increase level and decrease target size for every level complete
+        if score % scorePerLevel == 0 and targetRadius >= 10:
+            level += 1
+            targetRadius -= 5 
+
+    # Checks if player has won the game
+    if score >= 25:
+        #Clears window and displays win message
+        WINDOW.fill(WHITE)
+        winning_message = font.render("Congratulations! You have completed the game!", True, RED)
+        winning_rect = winning_message.get_rect(center=(mapSizeX / 2, mapSizeY / 2))
+        WINDOW.blit(winning_message, winning_rect)
+        game.display.update()
+        game.time.delay(5000) # Delays window closing and allows player to read message
+        break
 
     # Render Target 
     game.draw.circle(WINDOW, RED, (targetX, targetY), targetRadius)
 
-    # Render Score
+    # Render Score and Level
     score_text = font.render("Score: " + str(score), True, FULLBLUE)
-    WINDOW.blit(score_text, (10, 10))  # Draw score in top-left
+    level_text = font.render("Level: " + str(level), True, FULLBLUE)
+    WINDOW.blit(score_text, (10, 10))
+    WINDOW.blit(level_text, (10, 40))
 
     game.display.update()
     game.time.Clock().tick(60)
