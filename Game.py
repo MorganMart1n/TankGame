@@ -35,7 +35,7 @@ def calculate_barrel_position(tankX, tankSizeX, tankY, tankSizeY, shellArc):
     barrelY = tankY + tankSizeY / 2 - math.sin(shellArc) * 30
     return barrelX, barrelY
 
-def handle_fire_event(keys, tankX, tankY, tankSizeX, tankSizeY, shellArc, shellVelocity, shellVelocityX, shellVelocityY, shellTime, tankShellX, tankShellY, gravity):
+def handle_fire_event(keys, tankX, tankY, tankSizeX, tankSizeY, shellArc, shellVelocity, shellVelocityX, shellVelocityY, shellTime, tankShellX, tankShellY):
     # Handle the fire event when spacebar is pressed
     if keys[game.K_SPACE]:
         tankShellX = tankX + tankSizeX / 2
@@ -56,7 +56,7 @@ def handle_shell_movement(shellTime, maxShellTime, tankShellX, tankShellY, shell
         tankShellY = 0
     return shellTime, tankShellX, tankShellY
 
-def handle_collision_detection(tankShellX, tankShellY, targetX, targetY, tankShellSize, targetRadius, score, level, scorePerLevel, mapSizeX, mapSizeY):
+def handle_collision_detection(tankShellX, tankShellY, shellTime, targetX, targetY, tankShellSize, targetRadius, score, level, scorePerLevel, mapSizeX, mapSizeY):
     # Handle collision detection between the shell and the target
     distance_to_target = math.sqrt((tankShellX - targetX) ** 2 + (tankShellY - targetY) ** 2)
     if distance_to_target <= tankShellSize + targetRadius:
@@ -68,7 +68,7 @@ def handle_collision_detection(tankShellX, tankShellY, targetX, targetY, tankShe
         if score % scorePerLevel == 0 and targetRadius >= 10:
             level += 1
             targetRadius -= 5 
-    return tankShellX, tankShellY, score, level, targetRadius, targetX, targetY
+    return tankShellX, tankShellY, shellTime, score, level, targetRadius, targetX, targetY
 
 def check_game_over(score, WINDOW, mapSizeX, mapSizeY, WHITE, RED, font):
     # Check if the game is over (score reaches a certain threshold)
@@ -144,9 +144,9 @@ def main():
         keys = game.key.get_pressed()
         tankX, tankY, shellArc = handle_key_events(keys, tankX, tankY, tankVelocity, tankSizeX, mapSizeX, shellArc)
         barrelX, barrelY = calculate_barrel_position(tankX, tankSizeX, tankY, tankSizeY, shellArc)
-        tankShellX, tankShellY, shellVelocityX, shellVelocityY, shellTime = handle_fire_event(keys, tankX, tankY, tankSizeX, tankSizeY, shellArc, shellVelocity, shellVelocityX, shellVelocityY, shellTime, tankShellX, tankShellY, gravity)
+        tankShellX, tankShellY, shellVelocityX, shellVelocityY, shellTime = handle_fire_event(keys, tankX, tankY, tankSizeX, tankSizeY, shellArc, shellVelocity, shellVelocityX, shellVelocityY, shellTime, tankShellX, tankShellY)
         shellTime, tankShellX, tankShellY = handle_shell_movement(shellTime, maxShellTime, tankShellX, tankShellY, shellVelocityX, shellVelocityY, gravity)
-        tankShellX, tankShellY, score, level, targetRadius, targetX, targetY = handle_collision_detection(tankShellX, tankShellY, targetX, targetY, tankShellSize, targetRadius, score, level, scorePerLevel, mapSizeX, mapSizeY)
+        tankShellX, tankShellY, shellTime, score, level, targetRadius, targetX, targetY = handle_collision_detection(tankShellX, tankShellY, shellTime, targetX, targetY, tankShellSize, targetRadius, score, level, scorePerLevel, mapSizeX, mapSizeY)
         if check_game_over(score, WINDOW, mapSizeX, mapSizeY, WHITE, RED, font):
             break
         render_game(WINDOW, WHITE, tank, tankX, tankY, tankSizeX, tankSizeY, barrelX, barrelY, FULLBLUE, tankShellX, tankShellY, tankShellSize, targetX, targetY, targetRadius, RED, score, level, font)
