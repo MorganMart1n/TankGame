@@ -100,7 +100,7 @@ def move_target(mapSizeX, mapSizeY, targetRadius, targetX, targetY):
     # Move the target to a random position within the game window
     max_target_height = mapSizeY - 175  
 
-    targetX = random.randint(mapSizeX / 6, mapSizeX - targetRadius) 
+    targetX = random.randint(mapSizeX // 6, mapSizeX - targetRadius) 
     targetY = random.randint(max_target_height, mapSizeY - targetRadius)
 
     return targetX, targetY
